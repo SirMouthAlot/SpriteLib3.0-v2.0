@@ -3,6 +3,7 @@
 #include "ECS.h"
 #include "PhysicsBody.h"
 #include "Timer.h"
+#include "MainEntities.h"
 #include "Shader.h"
 
 struct Box

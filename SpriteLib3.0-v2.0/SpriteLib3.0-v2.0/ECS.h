@@ -3,13 +3,13 @@
 
 #include <entt/entity/registry.hpp>
 
-#include "EntityIdentifier.h"
 #include "Transform.h"
 #include "Camera.h"
 #include "Sprite.h"
 #include "AnimationController.h"
 #include "PhysicsBody.h"
 #include "VerticalScroll.h"
+#include "MainEntities.h"
 #include "HorizontalScroll.h"
 
 

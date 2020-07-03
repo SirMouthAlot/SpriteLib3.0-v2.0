@@ -28,7 +28,7 @@ void PhysicsSystem::Update(entt::registry * reg, b2World & world)
 void PhysicsSystem::Draw(entt::registry * reg)
 {
 	auto view = reg->view<PhysicsBody, Transform>();
-	auto& cam = reg->get<Camera>(EntityIdentifier::MainCamera());
+	auto& cam = reg->get<Camera>(MainEntities::MainCamera());
 
 	if (PhysicsBody::GetDraw())
 	{

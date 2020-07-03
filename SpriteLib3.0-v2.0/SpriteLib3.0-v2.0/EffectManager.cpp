@@ -1,6 +1,6 @@
 #include "EffectManager.h"
 
-Selectable EffectManager::m_selectable = Selectable("Effect Editor");
+//Selectable EffectManager::m_selectable = Selectable("Effect Editor");
 
 int EffectManager::m_numEffects = 0;
 bool EffectManager::m_effectsInit = false;
@@ -59,7 +59,7 @@ void EffectManager::CreateTab()
 {
 	bool temp = false;
 
-	if (ImGui::BeginTabItem(m_selectable.GetName().c_str(), m_selectable.GetSelected()))
+	if (ImGui::BeginTabItem("Name", &temp))
 	{
 		temp = true;
 
@@ -72,7 +72,7 @@ void EffectManager::CreateTab()
 
 void EffectManager::CreateEditor()
 {
-	if (m_selectable.GetSelected())
+	//if (m_selectable.GetSelected())
 	{
 		if (ImGui::TreeNode("Sepia Effect"))
 		{

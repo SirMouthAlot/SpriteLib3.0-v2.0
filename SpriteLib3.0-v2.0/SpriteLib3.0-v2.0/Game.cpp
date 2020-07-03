@@ -106,7 +106,7 @@ void Game::GUI()
 
 	if (ImGui::BeginTabBar(""))
 	{
-		BackEnd::GUI(m_register, m_activeScene);
+		BackEnd::GUI(m_register);
 
 		ImGui::EndTabBar();
 	}

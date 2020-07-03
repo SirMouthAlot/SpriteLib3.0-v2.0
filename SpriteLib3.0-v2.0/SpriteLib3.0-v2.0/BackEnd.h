@@ -5,11 +5,14 @@
 
 #include "Window.h"
 #include "Timer.h"
+#include "Xinput.h"
 #include "Input.h"
-#include "SceneEditor.h"
 #include "RenderingSystem.h"
 #include "AnimationSystem.h"
 #include "PhysicsSystem.h"
+#include "MainEntities.h"
+#include "Scene.h"
+#include "UI.h"
 
 //Mouse Motion event
 typedef SDL_MouseMotionEvent MotionEvent;
@@ -52,7 +55,7 @@ public:
 
 	//Runs the GUI
 	//*Uses ImGUI for this
-	static void GUI(entt::registry* reg, Scene* scene);
+	static void GUI(entt::registry* reg);
 
 	//Reshapes the window
 	//*Happens then WINDOW_EVENT_RESHAPE event is polled

@@ -157,9 +157,8 @@ void BackEnd::Update(entt::registry* mainReg)
 	AnimationSystem::Update(Timer::deltaTime, mainReg);
 }
 
-void BackEnd::GUI(entt::registry* reg, Scene* scene)
+void BackEnd::GUI(entt::registry* reg)
 {
-	SceneEditor::CreateTab(reg, scene);
 	EffectManager::CreateTab();
 }
 
@@ -177,12 +176,12 @@ void BackEnd::ReshapeWindow(int w, int h, entt::registry * mainReg)
 	EffectManager::ReshapeBuffers(unsigned(w), unsigned(h));
 
 	//Adjusts for aspect ratio
-	vec4 temp = mainReg->get<Camera>(EntityIdentifier::MainCamera()).GetOrthoSize();
-	auto& tempCam = mainReg->get<Camera>(EntityIdentifier::MainCamera());
+	vec4 temp = mainReg->get<Camera>(MainEntities::MainCamera()).GetOrthoSize();
+	auto& tempCam = mainReg->get<Camera>(MainEntities::MainCamera());
 
 	//Set values
-	mainReg->get<Camera>(EntityIdentifier::MainCamera()).SetWindowSize(vec2(float(m_windowWidth), float(m_windowHeight)));
-	mainReg->get<Camera>(EntityIdentifier::MainCamera()).Orthographic(m_aspectRatio, temp.x, temp.y, temp.z, temp.w, tempCam.GetNear(), tempCam.GetFar());
+	mainReg->get<Camera>(MainEntities::MainCamera()).SetWindowSize(vec2(float(m_windowWidth), float(m_windowHeight)));
+	mainReg->get<Camera>(MainEntities::MainCamera()).Orthographic(m_aspectRatio, temp.x, temp.y, temp.z, temp.w, tempCam.GetNear(), tempCam.GetFar());
 
 	tempCam.SetPosition(tempCam.GetPosition());
 }

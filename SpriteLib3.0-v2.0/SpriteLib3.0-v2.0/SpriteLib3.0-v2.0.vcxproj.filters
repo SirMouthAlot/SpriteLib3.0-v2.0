@@ -63,9 +63,6 @@
     <ClInclude Include="EffectManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EntityIdentifier.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Framebuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -106,9 +103,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Selectable.h">
@@ -162,6 +156,9 @@
     <ClInclude Include="Xinput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MainEntities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="include\imgui\imgui.cpp">
@@ -201,9 +198,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EffectManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EntityIdentifier.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Framebuffer.cpp">
@@ -249,9 +243,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SceneEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Selectable.cpp">
@@ -303,6 +294,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainEntities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

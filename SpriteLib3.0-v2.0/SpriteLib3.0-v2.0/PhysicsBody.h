@@ -6,7 +6,6 @@
 #include "JSON.h"
 #include "Vector.h"
 #include "VertexManager.h"
-#include "EntityIdentifier.h"
 #include "Transform.h"
 
 enum class BodyType

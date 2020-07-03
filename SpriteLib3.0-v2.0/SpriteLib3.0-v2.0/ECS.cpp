@@ -20,7 +20,7 @@ unsigned ECS::CreateEntity()
 	auto entity = m_reg->create();
 
 	//Attach Entity Identifier to the entity
-	m_reg->assign<EntityIdentifier>(entity);
+	//m_reg->assign<EntityIdentifier>(entity);
 
 	//Return entity ID
 	return entity;
@@ -32,34 +32,18 @@ void ECS::DestroyEntity(unsigned entity)
 	m_reg->destroy(entity);
 }
 
-void ECS::SetUpIdentifier(unsigned entity, unsigned componentID, std::string name)
-{
-	//Gets reference to the component
-	auto& id = GetComponent<EntityIdentifier>(entity);
-	//Set the entity
-	id.SetEntity(entity);
-	//Set the entity identifier unsigned int
-	id.AddComponent(componentID);
-	//Set the name of the entity
-	id.SetName(name);
-}
-
 void ECS::SetIsMainCamera(unsigned entity, bool mainCamera)
 {
-	//Gets reference to the component
-	auto& id = GetComponent<EntityIdentifier>(entity);
-	//Sets whether this entity is the main camera
-	id.SetIsMainCamera(mainCamera);
-
-	EntityIdentifier::MainCamera(entity);
+	if (mainCamera)
+	{
+		MainEntities::MainCamera(entity);
+	}
 }
 
 void ECS::SetIsMainPlayer(unsigned entity, bool mainPlayer)
 {
-	//Gets reference to the component
-	auto& id = GetComponent<EntityIdentifier>(entity);
-	//Sets whether this entity is the main player
-	id.SetIsMainPlayer(mainPlayer);
-
-	EntityIdentifier::MainPlayer(entity);
+	if (mainPlayer)
+	{
+		MainEntities::MainPlayer(entity);
+	}
 }

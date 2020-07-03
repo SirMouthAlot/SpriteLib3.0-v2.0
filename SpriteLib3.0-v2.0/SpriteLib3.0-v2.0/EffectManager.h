@@ -89,8 +89,6 @@ public:
 	static int GetSelectiveColorHandle();
 	static int GetBloomHandle();
 private:
-	static Selectable m_selectable;
-
 	//has there been one buffer initialized?
 	static bool m_effectsInit;
 	//Number of effects

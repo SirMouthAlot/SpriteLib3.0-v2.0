@@ -144,7 +144,6 @@
     <ClInclude Include="CameraSystem.h" />
     <ClInclude Include="ECS.h" />
     <ClInclude Include="EffectManager.h" />
-    <ClInclude Include="EntityIdentifier.h" />
     <ClInclude Include="Framebuffer.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GrainEffect.h" />
@@ -159,6 +158,7 @@
     <ClInclude Include="include\imgui\imstb_truetype.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="JSON.h" />
+    <ClInclude Include="MainEntities.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="PhysicsBody.h" />
     <ClInclude Include="PhysicsSystem.h" />
@@ -166,7 +166,6 @@
     <ClInclude Include="PostEffect.h" />
     <ClInclude Include="RenderingSystem.h" />
     <ClInclude Include="Scene.h" />
-    <ClInclude Include="SceneEditor.h" />
     <ClInclude Include="Selectable.h" />
     <ClInclude Include="SelectiveColorEffect.h" />
     <ClInclude Include="SepiaEffect.h" />
@@ -194,7 +193,6 @@
     <ClCompile Include="CameraSystem.cpp" />
     <ClCompile Include="ECS.cpp" />
     <ClCompile Include="EffectManager.cpp" />
-    <ClCompile Include="EntityIdentifier.cpp" />
     <ClCompile Include="Framebuffer.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GrainEffect.cpp" />
@@ -208,6 +206,7 @@
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="JSON.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainEntities.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="PhysicsBody.cpp" />
     <ClCompile Include="PhysicsSystem.cpp" />
@@ -215,7 +214,6 @@
     <ClCompile Include="PostEffect.cpp" />
     <ClCompile Include="RenderingSystem.cpp" />
     <ClCompile Include="Scene.cpp" />
-    <ClCompile Include="SceneEditor.cpp" />
     <ClCompile Include="Selectable.cpp" />
     <ClCompile Include="SelectiveColorEffect.cpp" />
     <ClCompile Include="SepiaEffect.cpp" />

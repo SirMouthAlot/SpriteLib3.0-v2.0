@@ -2,7 +2,7 @@
 
 vec2 Util::ConvertToGL(entt::registry* reg, vec2 clickCoord)
 {
-	Camera tempCam = reg->get<Camera>(EntityIdentifier::MainCamera());
+	Camera tempCam = reg->get<Camera>(MainEntities::MainCamera());
 
 	//Need to convert clicked point to screen space first!
 	vec2 clickedPoint = clickCoord;

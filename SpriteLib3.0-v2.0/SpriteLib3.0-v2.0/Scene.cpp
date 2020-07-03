@@ -17,16 +17,16 @@ void Scene::Unload()
 
 void Scene::SaveScene()
 {
-	//Our scene
-	nlohmann::json scene;
+	////Our scene
+	//nlohmann::json scene;
 
-	//Casts to scene so all inherited classes can be saved the same way
-	//The only data that matters for saving is the actual registry
-	//which exists in the base class, meaning data won't be lost
-	scene["Scene"] = *this;
+	////Casts to scene so all inherited classes can be saved the same way
+	////The only data that matters for saving is the actual registry
+	////which exists in the base class, meaning data won't be lost
+	//scene["Scene"] = *this;
 
-	//Create the file and output the scene's contents to it
-	File::CreateJSON(m_name + ".json", scene);
+	////Create the file and output the scene's contents to it
+	//File::CreateJSON(m_name + ".json", scene);
 }
 
 void Scene::InitScene(float windowWidth, float windowHeight)
@@ -47,6 +47,7 @@ void Scene::InitScene(float windowWidth, float windowHeight)
 	{
 		//Creates Camera entity
 		auto entity = ECS::CreateEntity();
+		ECS::SetIsMainCamera(entity, true);
 
 		//Creates new orthographic camera
 		ECS::AttachComponent<Camera>(entity);
@@ -55,11 +56,6 @@ void Scene::InitScene(float windowWidth, float windowHeight)
 		ECS::GetComponent<Camera>(entity).SetOrthoSize(temp);
 		ECS::GetComponent<Camera>(entity).SetWindowSize(vec2(float(windowWidth), float(windowHeight)));
 		ECS::GetComponent<Camera>(entity).Orthographic(aspectRatio, temp.x, temp.y, temp.z, temp.w, -100.f, 100.f);
-
-		//Sets up the Identifier
-		unsigned int bitHolder = EntityIdentifier::CameraBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "Horizontal Scrolling Cam");
-		ECS::SetIsMainCamera(entity, true);
 	}
 
 	//Setup new Entity
@@ -77,10 +73,6 @@ void Scene::InitScene(float windowWidth, float windowHeight)
 		ECS::GetComponent<Sprite>(entity).LoadSprite(fileName, 100, 60);
 		ECS::GetComponent<Sprite>(entity).SetTransparency(0.5f);
 		ECS::GetComponent<Transform>(entity).SetPosition(vec3(0.f, 0.f, 0.f));
-
-		//Sets up the Identifier
-		unsigned int bitHolder = EntityIdentifier::SpriteBit() | EntityIdentifier::TransformBit();
-		ECS::SetUpIdentifier(entity, bitHolder, "Hello world");
 	}
 }
 
@@ -138,7 +130,8 @@ b2World & Scene::GetPhysicsWorld()
 
 void Scene::SetWindowSize(float windowWidth, float windowHeight)
 {
-	auto& tempCam = m_sceneReg->get<Camera>(EntityIdentifier::MainCamera());
+	//TODO: Find new way to get the main camera
+	auto& tempCam = m_sceneReg->get<Camera>(MainEntities::MainCamera());
 	
 	tempCam.SetWindowSize(vec2(windowWidth, windowHeight));
 	tempCam.Orthographic(float(windowWidth / windowHeight), tempCam.GetOrthoSize().x, tempCam.GetOrthoSize().y,
