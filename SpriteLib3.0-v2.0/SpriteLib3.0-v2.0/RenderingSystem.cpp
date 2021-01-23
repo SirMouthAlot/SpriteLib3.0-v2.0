@@ -134,7 +134,6 @@ void RenderingSystem::Draw(entt::registry* reg)
 		pair.second.Draw();
 	}
 
-
 	//Unbinds the basic buffer
 	EffectManager::UnbindBasicEffect();
 	//Unbinds the draw shader

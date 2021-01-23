@@ -1,29 +1,10 @@
 #include "PhysicsBody.h"
+#include "ECS.h"
 
-unsigned int CollisionIDs::m_playerID		=0x1;
-unsigned int CollisionIDs::m_environmentID	=0x10;
-unsigned int CollisionIDs::m_enemyID		=0x100;
-
-
-unsigned int CollisionIDs::Player()
-{
-	return m_playerID;
-}
-
-unsigned int CollisionIDs::Environment()
-{
-	return m_environmentID;
-}
-
-unsigned int CollisionIDs::Enemy()
-{
-	return m_enemyID;
-}
-
-vec3 PhysicsBody::m_gravityAcceleration = vec3(0.f, -35.f, 0.f);
 bool PhysicsBody::m_drawBodies = false;
+std::vector<int> PhysicsBody::m_bodiesToDelete;
 
-PhysicsBody::PhysicsBody(b2Body * body, float radius, vec2 centerOffset, bool isDynamic)
+PhysicsBody::PhysicsBody(int entity, b2Body * body, float radius, vec2 centerOffset, bool sensor, EntityCategories category, int collidesWith, float friction, float density)
 {
 	//Bodies don't reference a shape by themselves
 	//they need a shape that has been linked to a fixture
@@ -35,11 +16,17 @@ PhysicsBody::PhysicsBody(b2Body * body, float radius, vec2 centerOffset, bool is
 	//Creates the actual fixture (aka, shape, mass, etc);
 	b2FixtureDef tempFixture;
 	tempFixture.shape = &tempShape;
-	tempFixture.density = 1.f;
-	tempFixture.friction = 0.3f;
+	tempFixture.density = density;
+	tempFixture.friction = friction;
+	tempFixture.isSensor = sensor;
+	tempFixture.filter.categoryBits = category;
+	tempFixture.filter.maskBits = collidesWith;
+
 
 	m_body = body;
 	m_body->CreateFixture(&tempFixture);
+
+	m_body->SetUserData((void*)entity);
 
 	m_body = body;
 	m_bodyType = BodyType::CIRCLE;
@@ -51,17 +38,9 @@ PhysicsBody::PhysicsBody(b2Body * body, float radius, vec2 centerOffset, bool is
 	m_height = radius * 2.f;
 
 	m_centerOffset = centerOffset;
-	m_bottomLeft = vec2(centerOffset.x - (radius), centerOffset.y - (radius));
-	m_bottomRight = vec2(centerOffset.x + (radius), centerOffset.y - (radius));
-	m_topLeft = vec2(centerOffset.x - (radius), centerOffset.y + (radius));
-	m_topRight = vec2(centerOffset.x + (radius), centerOffset.y + (radius));
-
-	m_dynamic = isDynamic;
-
-	InitBody();
 }
 
-PhysicsBody::PhysicsBody(b2Body * body, float width, float height, vec2 centerOffset, bool isDynamic)
+PhysicsBody::PhysicsBody(int entity, b2Body* body, float width, float height, vec2 centerOffset, bool sensor, EntityCategories category, int collidesWith, float friction, float density)
 {
 	//Bodies don't reference a shape by themselves
 	//they need a shape that has been linked to a fixture
@@ -73,11 +52,16 @@ PhysicsBody::PhysicsBody(b2Body * body, float width, float height, vec2 centerOf
 	//Creates the actual fixture (aka, shape, mass, etc);
 	b2FixtureDef tempFixture;
 	tempFixture.shape = &tempShape;
-	tempFixture.density = 1.f;
-	tempFixture.friction = 0.3f;
+	tempFixture.density = density;
+	tempFixture.friction = friction;
+	tempFixture.isSensor = sensor;
+	tempFixture.filter.categoryBits = category;
+	tempFixture.filter.maskBits = collidesWith;
 
 	m_body = body;
 	m_body->CreateFixture(&tempFixture);
+
+	m_body->SetUserData((void*)entity);
 
 	m_body = body;
 	m_bodyType = BodyType::BOX;
@@ -86,14 +70,61 @@ PhysicsBody::PhysicsBody(b2Body * body, float width, float height, vec2 centerOf
 	m_height = height;
 
 	m_centerOffset = centerOffset;
-	m_bottomLeft = vec2(centerOffset.x - (width / 2.f), centerOffset.y - (height / 2.f));
-	m_bottomRight = vec2(centerOffset.x + (width / 2.f), centerOffset.y - (height / 2.f));
-	m_topLeft = vec2(centerOffset.x - (width / 2.f), centerOffset.y + (height / 2.f));
-	m_topRight = vec2(centerOffset.x + (width / 2.f), centerOffset.y + (height / 2.f));
+}
 
-	m_dynamic = isDynamic;
+PhysicsBody::PhysicsBody(int entity, BodyType bodyType, b2Body* body, std::vector<b2Vec2> points, vec2 centerOffset, bool sensor, EntityCategories category, int collidesWith, float friction, float density)
+{
+	//Used to calculate new width and height
+	float lX = 999.f;
+	float rX = -999.f;
+	float bY = 999.f;
+	float tY = -999.f;
 
-	InitBody();
+	//Bodies don't reference a shape by themselves
+	//they need a shape that has been linked to a fixture
+	//in order to have a shape
+	int count = points.size();
+	b2Vec2 polyPoints[8];
+
+	if (points.size() <= 8)
+	{
+		for (int i = 0; i < points.size(); i++)
+		{
+			polyPoints[i] = points[i];
+
+			//Used to calculate width and height values
+			lX = std::min(lX, points[i].x);
+			rX = std::max(rX, points[i].x);
+			bY = std::min(bY, points[i].y);
+			tY = std::max(tY, points[i].y);
+		}
+	}
+
+	b2PolygonShape tempShape;
+	tempShape.Set(polyPoints, count);
+	tempShape.m_centroid = b2Vec2(centerOffset.x, centerOffset.y);
+
+	//Creates the actual fixture (aka, shape, mass, etc);
+	b2FixtureDef tempFixture;
+	tempFixture.shape = &tempShape;
+	tempFixture.density = density;
+	tempFixture.friction = friction;
+	tempFixture.isSensor = sensor;
+	tempFixture.filter.categoryBits = category;
+	tempFixture.filter.maskBits = collidesWith;
+
+	m_body = body;
+	m_body->CreateFixture(&tempFixture);
+
+	m_body->SetUserData((void*)entity);
+
+	m_body = body;
+	m_bodyType = bodyType;
+
+	m_width = rX - lX;
+	m_height = tY - bY;
+
+	m_centerOffset = centerOffset;
 }
 
 void PhysicsBody::DeleteBody()
@@ -104,43 +135,26 @@ void PhysicsBody::DeleteBody()
 	}
 }
 
-void PhysicsBody::InitBody()
-{
-	m_vao = VertexManager::CreateVAO();
-	glBindVertexArray(m_vao);
-
-	//Enable slot 0
-	glEnableVertexAttribArray(0);	//Vertices
-
-	//VBO positions
-	m_vboPos = VertexManager::GetPlaneVertVBO();
-
-	//Pushes away the warnings
-#pragma warning(push)
-#pragma warning(disable : 4312)
-//Bind position buffer
-	glBindBuffer(GL_ARRAY_BUFFER, m_vboPos);
-	//Sets the attribute pointer
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
-#pragma warning(pop)
-
-	//Unbinds the buffers
-	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
-	glBindVertexArray(GL_NONE);
-}
-
-void PhysicsBody::DrawBody()
-{
-	//Bind vao
-	glBindVertexArray(m_vao);
-	//Draw the points
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-	//Unbind vao
-	glBindVertexArray(GL_NONE);
-}
-
 void PhysicsBody::Update(Transform * trans)
 {
+	//Make sure that movement doesn't happen in contact step
+	if (moveLater)
+	{
+		//set position with saved move value
+		SetPosition(moveValue);
+		moveLater = false;
+	}
+	if (rotateLater)
+	{
+		SetRotationAngleDeg(rotationDeg);
+		rotateLater = false;
+	}
+	if (scaleLater)
+	{
+ 		ScaleBody(scaleVal, scaleFixt);
+		scaleLater = false;
+	}
+
 	//Stores the position;
 	m_position = m_body->GetPosition();
 
@@ -154,73 +168,13 @@ void PhysicsBody::ApplyForce(vec3 force)
 	m_body->ApplyForce(b2Vec2(float32(force.x), float32(force.y)),
 						b2Vec2(float32(m_body->GetPosition().x), float32(m_body->GetPosition().y)),
 						 true);
-
 }
 
-void PhysicsBody::AddCollideID(unsigned int collideID)
-{
-	//Bitwise OR an ID into the physics body types that this one collides with
-	m_collideID |= collideID;
-}
 
 b2Body * PhysicsBody::GetBody() const
 {
 	return m_body;
 }
-
-b2Vec2 PhysicsBody::GetPosition() const
-{
-	return m_position;
-}
-
-vec3 PhysicsBody::GetForce() const
-{
-	//Returns the applied force
-	return m_appliedForce;
-}
-
-vec3 PhysicsBody::GetAcceleration() const
-{
-	//Returns current acceleration
-	return m_acceleration;
-}
-
-float PhysicsBody::GetMaxVelo() const
-{
-	//Returns max velocity
-	return m_maxVelo;
-}
-
-vec3 PhysicsBody::GetVelocity() const
-{
-	//Returns current velocity
-	return m_velocity;
-}
-
-float PhysicsBody::GetFriction() const
-{
-	//Returns coefficient of friction
-	return m_friction;
-}
-
-vec3 PhysicsBody::GetGravityAcceleration()
-{
-	//Returns the acceleration due to gravity
-	return m_gravityAcceleration;
-}
-
-bool PhysicsBody::GetGravity() const
-{
-	//Is gravity being applied?
-	return m_applyGravity;
-}
-
-float PhysicsBody::GetMass() const
-{
-	//Return the mass of this body
-	return m_mass;
-}
-
 
 BodyType PhysicsBody::GetBodyType() const
 {
@@ -228,35 +182,46 @@ BodyType PhysicsBody::GetBodyType() const
 	return m_bodyType;
 }
 
+
+float PhysicsBody::GetMass() const
+{
+	b2MassData massData;
+	m_body->GetMassData(&massData);
+	return massData.mass;
+}
+
+b2Vec2 PhysicsBody::GetPosition() const
+{
+	return m_position;
+}
+
+vec3 PhysicsBody::GetVelocity() const
+{
+	//Returns current velocity
+	b2Vec2 vel = m_body->GetLinearVelocity();
+	vec3 temp = vec3(vel.x, vel.y, 0.f);
+	
+	return temp;
+}
+
+float PhysicsBody::GetGravityScale() const
+{
+	return m_body->GetGravityScale();
+}
+
+vec4 PhysicsBody::GetColor() const
+{
+	return m_color;
+}
+
+
 vec2 PhysicsBody::GetCenterOffset() const
 {
 	//return offset from the center of the sprite
 	return m_centerOffset;
 }
 
-vec2 PhysicsBody::GetBottomLeft() const
-{
-	//return bottom left corner
-	return m_bottomLeft;
-}
 
-vec2 PhysicsBody::GetBottomRight() const
-{
-	//return bottom right corner
-	return m_bottomRight;
-}
-
-vec2 PhysicsBody::GetTopLeft() const
-{
-	//return top left corner
-	return m_topLeft;
-}
-
-vec2 PhysicsBody::GetTopRight() const
-{
-	//return top right corner
-	return m_topRight;
-}
 
 float PhysicsBody::GetWidth() const
 {
@@ -270,90 +235,33 @@ float PhysicsBody::GetHeight() const
 	return m_height;
 }
 
-float PhysicsBody::GetRadius() const
+float PhysicsBody::GetRadius(int fixture) const
 {
-	return m_radius;
+	return m_body->GetFixtureList()[fixture].GetShape()->m_radius;
 }
 
-unsigned int PhysicsBody::GetBodyID() const
+
+float PhysicsBody::GetRotationAngleDeg() const
 {
-	//Returns this physics body's type
-	return m_bodyID;
+	return Transform::ToDegrees(m_body->GetAngle());
 }
 
-unsigned int PhysicsBody::GetCollideID() const
+bool PhysicsBody::GetFixedRotation() const
 {
-	//Returns the ids (OR'd together) that this physics body collides with
-	return m_collideID;
+	return m_fixedRotation;
 }
 
-bool PhysicsBody::GetDynamic() const
-{
-	//Does this body move?
-	return m_dynamic;
-}
 
 bool PhysicsBody::GetDraw()
 {
 	return m_drawBodies;
 }
 
+
+
 void PhysicsBody::SetBody(b2Body * body)
 {
 	m_body = body;
-}
-
-void PhysicsBody::SetPosition(b2Vec2 bodyPos)
-{
-	m_position = bodyPos;
-}
-
-void PhysicsBody::SetForce(vec3 force)
-{
-	//Set the applied force
-	m_appliedForce = force;
-}
-
-void PhysicsBody::SetAcceleration(vec3 accel)
-{
-	//Set the acceleration
-	m_acceleration = accel;
-}
-
-void PhysicsBody::SetMaxVelo(float velo)
-{
-	//Set the max velocity
-	m_maxVelo = velo;
-}
-
-void PhysicsBody::SetVelocity(vec3 velo)
-{
-	//Set the velocitys
-	m_velocity = velo;
-}
-
-void PhysicsBody::SetFriction(float fric)
-{
-	//Set the coefficient of friction
-	m_friction = fric;
-}
-
-void PhysicsBody::SetGravityAcceleration(vec3 grav)
-{
-	//Set the acceleration due to gravity
-	m_gravityAcceleration = grav;
-}
-
-void PhysicsBody::SetGravity(bool grav)
-{
-	//Is gravity applying to this object?
-	m_applyGravity = grav;
-}
-
-void PhysicsBody::SetMass(float mass)
-{
-	//Set the mass of the body
-	m_mass = mass;
 }
 
 void PhysicsBody::SetBodyType(BodyType type)
@@ -362,51 +270,158 @@ void PhysicsBody::SetBodyType(BodyType type)
 	m_bodyType = type;
 }
 
+
+void PhysicsBody::SetPosition(b2Vec2 bodyPos, bool contactStep)
+{
+	if (!contactStep)
+	{
+		//Body transform
+		m_body->SetTransform(bodyPos, m_body->GetAngle());
+	}
+	else
+	{
+		moveLater = true;
+		moveValue = bodyPos;
+	}
+}
+
+void PhysicsBody::SetVelocity(vec3 velo)
+{
+	b2Vec2 vel = b2Vec2(velo.x, velo.y);
+
+	m_body->SetLinearVelocity(vel);
+}
+
+void PhysicsBody::SetGravityScale(float gravSc)
+{
+	m_body->SetGravityScale(gravSc);
+}
+
+void PhysicsBody::SetColor(vec4 col)
+{
+	m_color = col;
+}
+
+void PhysicsBody::SetMass(float mass)
+{
+	b2MassData massData;
+	m_body->GetMassData(&massData);
+	massData.mass = mass;
+
+	m_body->SetMassData(&massData);
+}
+
 void PhysicsBody::SetCenterOffset(vec2 cent)
 {
 	//Set the center offset
 	m_centerOffset = cent;
 }
 
-void PhysicsBody::SetBottomLeft(vec2 BL)
+
+
+void PhysicsBody::ScaleBody(float scale, int fixture, bool contactStep)
 {
-	//Set the bottom left corner
-	m_bottomLeft = BL;
+	if (!contactStep)
+	{
+		if (m_bodyType == BodyType::CIRCLE)
+		{
+			float scaledRadius = (m_width / 2.f) * scale;
+
+			m_width += scaledRadius;
+			m_height += scaledRadius;
+			m_body->GetFixtureList()[fixture].GetShape()->m_radius = m_width / 2.f;
+			m_body->SetAwake(true);
+		}
+		else
+		{
+			//Used to calculate new width and height
+			float lX = 999.f;
+			float rX = -999.f;
+			float bY = 999.f;
+			float tY = -999.f;
+
+			//Gets the shape value and casts as b2PolygonShape so we can access the vertices
+			b2PolygonShape* bodyShape = (b2PolygonShape*)m_body->GetFixtureList()[fixture].GetShape();
+
+			//Center of the polygon
+			b2Vec2 center = bodyShape->m_centroid;
+
+			//loops through every vertice
+			for (int i = 0; i < bodyShape->m_count; i++)
+			{
+				//Create normalized direction
+				b2Vec2 vert = bodyShape->m_vertices[i];
+				lX = std::min(lX, vert.x);
+				rX = std::max(rX, vert.x);
+				bY = std::min(bY, vert.y);
+				tY = std::max(tY, vert.y);
+
+				b2Vec2 dir = (vert - center);
+				dir.Normalize();
+
+				//Moves the vert out by a scaled direction vector
+				bodyShape->m_vertices[i] += scale * dir;
+			}
+
+			m_width = rX - lX;
+			m_height = tY - bY;
+			m_body->SetAwake(true);
+		}
+		
+		int ent = (int)m_body->GetUserData();
+
+		auto tempSpr = ECS::m_reg->try_get<Sprite>(ent);
+		if (tempSpr != nullptr)
+		{
+			tempSpr->SetWidth(m_width);
+			tempSpr->SetHeight(m_height);
+		}
+	}
+	else
+	{
+		scaleLater = true;
+		scaleFixt = fixture;
+		scaleVal = scale;
+	}
 }
 
-void PhysicsBody::SetBottomRight(vec2 BR)
+void PhysicsBody::SetRotationAngleDeg(float degrees, bool contactStep)
 {
-	//Set the bottom right corner
-	m_bottomRight = BR;
+	if (!contactStep)
+	{
+		//Set the rotation angle
+		m_body->SetTransform(m_body->GetPosition(), Transform::ToRadians(degrees));
+	}
+	else
+	{
+		rotateLater = true;
+		rotationDeg = degrees;
+	}
 }
 
-void PhysicsBody::SetTopLeft(vec2 TL)
+void PhysicsBody::SetFixedRotation(bool fixed)
 {
-	//Set the top left corner
-	m_topLeft = TL;
+	m_body->SetFixedRotation(fixed);
+
+	m_fixedRotation = fixed;
 }
 
-void PhysicsBody::SetTopRight(vec2 TR)
+void PhysicsBody::SetCategoryBit(EntityCategories category, int fixture)
 {
-	//Set the top right corner
-	m_topRight = TR;
+	b2Filter filter = m_body->GetFixtureList()[fixture].GetFilterData();
+
+	filter.categoryBits = category;
+
+	m_body->GetFixtureList()[fixture].SetFilterData(filter);
 }
 
-void PhysicsBody::SetWidth(float width)
+void PhysicsBody::SetCollisionBit(EntityCategories collision, int fixture)
 {
-	//Set the physics body width
-	m_width = width;
-}
+	b2Filter filter = m_body->GetFixtureList()[fixture].GetFilterData();
 
-void PhysicsBody::SetHeight(float height)
-{
-	//Sets the physics body height
-	m_height = height;
-}
+	filter.maskBits = collision;
 
-void PhysicsBody::SetRadius(float radius)
-{
-	m_radius = radius;
+	m_body->GetFixtureList()[fixture].SetFilterData(filter);
 }
 
 void PhysicsBody::SetDraw(bool drawBodies)
@@ -414,20 +429,3 @@ void PhysicsBody::SetDraw(bool drawBodies)
 	m_drawBodies = drawBodies;
 }
 
-void PhysicsBody::SetBodyID(unsigned int bodyID)
-{
-	//What type is this body?
-	m_bodyID = bodyID;
-}
-
-void PhysicsBody::SetCollideID(unsigned int collideID)
-{
-	//What body types will this body collide with?
-	m_collideID = collideID;
-}
-
-void PhysicsBody::SetDynamic(bool isDynamic)
-{
-	//Is this body moving?
-	m_dynamic = isDynamic;
-}

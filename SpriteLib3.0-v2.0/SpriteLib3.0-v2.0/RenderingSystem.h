@@ -2,6 +2,7 @@
 #define __RENDERINGSYSTEM_H__
 
 #include <entt/entity/registry.hpp>
+#include <Box2D/Dynamics/b2World.h>
 
 #include "Shader.h"
 #include "VertexManager.h"

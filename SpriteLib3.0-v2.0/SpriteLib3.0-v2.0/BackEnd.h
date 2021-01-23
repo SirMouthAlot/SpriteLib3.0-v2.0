@@ -10,8 +10,9 @@
 #include "RenderingSystem.h"
 #include "AnimationSystem.h"
 #include "PhysicsSystem.h"
+#include "Player.h"
 #include "MainEntities.h"
-#include "Scene.h"
+#include "Scenes.h"
 #include "UI.h"
 
 //Mouse Motion event
@@ -38,6 +39,9 @@ public:
 	//*Init Video and events
 	//*Sets all SDL attriutes
 	static void InitSDL();
+
+	//Filters out modifier keys and sends input to imgui
+	static void FilterKeys(SDL_KeyboardEvent* keyEvnt);
 
 	//Polls SDL events
 	static void PollEvents(entt::registry* mainReg, bool* closeWindow, 

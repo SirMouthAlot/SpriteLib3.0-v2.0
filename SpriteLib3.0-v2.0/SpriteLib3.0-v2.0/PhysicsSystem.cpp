@@ -1,8 +1,60 @@
 #include "PhysicsSystem.h"
 
+Shader physicsDrawShader;
+
+bool m_debugPlaneInit = false;
+
+GLuint m_debugPlaneVAO = GL_NONE;
+GLuint m_debugPlaneUVVBO = GL_NONE;
+static GLuint m_debugPlaneVBO;
+
+std::vector<std::string> m_bodyTypeMasks;
+
 void PhysicsSystem::Init()
 {
-	physicsDrawShader.Load("./assets/shader/PhysicsDraw.vert", "./assets/shader/PhysicsDraw.frag");
+	physicsDrawShader.Load("./assets/shader/StaticGeometry.vert", "./assets/shader/PhysicsColorDraw.frag");
+	 
+	if (!m_debugPlaneInit)
+	{
+		m_debugPlaneVBO = VertexManager::GetPlaneVertVBO();
+		m_debugPlaneUVVBO = VertexManager::GetPlaneUVVBO();
+
+		InitDebugDrawPlaneVAO();
+		m_debugPlaneInit = true;
+	}
+	
+	m_bodyTypeMasks.push_back("SquareMask.png");
+	m_bodyTypeMasks.push_back("CircleMask.png");
+	m_bodyTypeMasks.push_back("TriangleMask.png");
+	m_bodyTypeMasks.push_back("HexagonMask.png");
+}
+
+void PhysicsSystem::InitDebugDrawPlaneVAO()
+{
+	//Creates a new VAO (able to be unloaded upon program termination)
+	m_debugPlaneVAO = VertexManager::CreateVAO();
+	glBindVertexArray(m_debugPlaneVAO);
+
+	//Enables slot 0 and 1
+	glEnableVertexAttribArray(0); //vertices
+	glEnableVertexAttribArray(1); //UV coordinates
+
+	//Pushes away the warnings
+#pragma warning(push)
+#pragma warning(disable : 4312)
+	//Bind Vert VBO
+	glBindBuffer(GL_ARRAY_BUFFER, m_debugPlaneVBO);
+	//Sets the vertex attributes
+	glVertexAttribPointer((GLuint)0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
+	//Bind UV VBO
+	glBindBuffer(GL_ARRAY_BUFFER, m_debugPlaneUVVBO);
+	//Sets the uv attributes
+	glVertexAttribPointer((GLuint)1, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
+#pragma warning(pop)
+
+	//Unbinds the buffers
+	glBindBuffer(GL_ARRAY_BUFFER, GL_NONE);
+	glBindVertexArray(GL_NONE);
 }
 
 void PhysicsSystem::Update(entt::registry * reg, b2World & world)
@@ -50,15 +102,14 @@ void PhysicsSystem::Draw(entt::registry * reg)
 
 			std::string fileName = "Masks/";
 
-			if (physBody.GetBodyType() == BodyType::BOX)
+			for (int i = 0; i < (int)BodyType::NUM_TYPES; i++)
 			{
-				fileName += "SquareMask.png";
+				if (physBody.GetBodyType() == (BodyType)i)
+				{
+					fileName += m_bodyTypeMasks[i];
+				}
 			}
-			else if (physBody.GetBodyType() == BodyType::CIRCLE)
-			{
-				fileName += "CircleMask.png";
-			}
-
+			
 			Texture* mask = TextureManager::FindTexture(fileName);
 
 			//Binds the draw shader
@@ -68,14 +119,19 @@ void PhysicsSystem::Draw(entt::registry * reg)
 			physicsDrawShader.SendUniform("uView", cam.GetView());
 			physicsDrawShader.SendUniform("uProj", cam.GetProjection());
 			physicsDrawShader.SendUniform("uModel", temp.GetLocalToWorldMatrix());
-			physicsDrawShader.SendUniform("uColor", vec4(1.f, 0.f, 0.f, 0.3f));
+			physicsDrawShader.SendUniform("uColor", physBody.GetColor());
 
 			mask->Bind(0);
 
 			//Draws the body
-			physBody.DrawBody();
+			 //Bind vertex array
+			glBindVertexArray(m_debugPlaneVAO);
+			//Draw the array
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			//unbind vertex array
+			glBindVertexArray(GL_NONE);
 
-			mask->Unbind(0);
+			mask->Unbind();
 
 			//Unbinds the shader
 			physicsDrawShader.Unbind();
@@ -97,72 +153,21 @@ void PhysicsSystem::Run(b2World & world)
 
 	//steps through the world
 	world.Step(timeStep, velocityIterations, positionIterations);
+
+	CleanupBodies();
 }
 
-bool PhysicsSystem::BoxCircleCollision(std::pair<PhysicsBody&, Circle> group1, std::pair<PhysicsBody&, Box> group2)
+void PhysicsSystem::CleanupBodies()
 {
-	//Doesn't work.
-	////Circle position
-	//vec2 circlePos = vec2(group1.second.m_center.x, group1.second.m_center.y);
-	////Circle Radius
-	//float circleRad = group1.second.m_radius;
-	////Box position
-	//vec2 boxPos = vec2(group2.second.m_center.x, group2.second.m_center.y);
-	////Box width and height
-	//float boxWidth = group2.first.GetWidth();
-	//float boxHeight = group2.first.GetHeight();
-	////Edges//
-	////Left edge
-	//float left = boxPos.x - ((1.f / 2.f) * boxWidth);
-	////Right edge
-	//float right = boxPos.x + ((1.f / 2.f) * boxWidth);
-	////Top edge
-	//float top = boxPos.y + ((1.f / 2.f) * boxHeight);
-	////Bottom edge
-	//float bottom = boxPos.y - ((1.f / 2.f) * boxHeight);
-
-	//vec2 edgeBot 
-
-
-	////Makes line from circle center to the test edge
-	////Then gets the length of the line.
-	//vec2 circleToEdge = circlePos - testVec;
-	//float distance = circleToEdge.GetMagnitude();
-
-	////If the distance is less than or equal to the radius, there's a collision.
-	//if (distance <= circleRad)
-	//{
-	//	return true;
-	//}
-
-	////If the previous statement isn't true, there is no collision.
-	//return false;
-	return false;
-}
-
-bool PhysicsSystem::BoxBoxCollision(std::pair<PhysicsBody&, Box> group1, std::pair<PhysicsBody&, Box> group2)
-{
-	//if body 1 actually collides with body 2
-		//Perform AABB bounding box checks
-	//else
-		//There's no collision
-	if (group1.first.GetCollideID() & group2.first.GetBodyID())
+	for (int i = 0; i < PhysicsBody::m_bodiesToDelete.size(); i++)
 	{
-		//Perform bounding box checks
-		//Are the x-axes colliding?
-		bool axisXCollide = group1.second.m_bottomRight.x >= group2.second.m_bottomLeft.x &&
-			group2.second.m_bottomRight.x >= group1.second.m_bottomLeft.x;
+		//Bodies to delete
+		ECS::GetComponent<PhysicsBody>(PhysicsBody::m_bodiesToDelete[i]).DeleteBody();
 
-		//Are the y-axes colliding?
-		bool axisYCollide = group1.second.m_topLeft.y >= group2.second.m_bottomLeft.y &&
-			group2.second.m_topLeft.y >= group1.second.m_bottomLeft.y;
+		//Destroy the entity
+		ECS::DestroyEntity(PhysicsBody::m_bodiesToDelete[i]);
+	}
 
-		//If both axes are overlapping, it means the bodies are colliding
-		//If not, then they're not colliding
-		return axisXCollide && axisYCollide;
-	}
-	else
-	{
-		return false;
-	}
+	//Clear bodies to delete
+	PhysicsBody::m_bodiesToDelete.clear();
 }

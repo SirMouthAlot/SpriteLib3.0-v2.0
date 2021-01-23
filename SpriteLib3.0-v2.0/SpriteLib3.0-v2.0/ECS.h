@@ -10,7 +10,10 @@
 #include "PhysicsBody.h"
 #include "VerticalScroll.h"
 #include "MainEntities.h"
+#include "DestroyTrigger.h"
+#include "TranslateTrigger.h"
 #include "HorizontalScroll.h"
+#include "CanJump.h"
 
 
 class ECS abstract
@@ -50,7 +53,6 @@ public:
 	static void SetIsMainCamera(unsigned entity, bool mainCamera);
 	static void SetIsMainPlayer(unsigned entity, bool mainPlayer);
 
-private:
 	static entt::registry* m_reg;
 };
 

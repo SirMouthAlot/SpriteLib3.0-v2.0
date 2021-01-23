@@ -77,7 +77,7 @@ Shader::~Shader()
 	if (m_isInit)
 	{
 		//Unload the shader
-		Unload();
+		//Unload();
 	}
 }
 

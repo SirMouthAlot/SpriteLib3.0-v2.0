@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "Utilities.h"
 
 Scene::Scene(std::string name)
 {
@@ -13,20 +14,12 @@ void Scene::Unload()
 		delete m_sceneReg;
 		m_sceneReg = nullptr;
 	}
-}
 
-void Scene::SaveScene()
-{
-	////Our scene
-	//nlohmann::json scene;
-
-	////Casts to scene so all inherited classes can be saved the same way
-	////The only data that matters for saving is the actual registry
-	////which exists in the base class, meaning data won't be lost
-	//scene["Scene"] = *this;
-
-	////Create the file and output the scene's contents to it
-	//File::CreateJSON(m_name + ".json", scene);
+	if (m_physicsWorld != nullptr)
+	{
+		delete m_physicsWorld;
+		m_physicsWorld = nullptr;
+	}
 }
 
 void Scene::InitScene(float windowWidth, float windowHeight)
@@ -35,7 +28,10 @@ void Scene::InitScene(float windowWidth, float windowHeight)
 	printf("You shouldn't be running this, while initializing this Scene Type.\n");
 
 	//Dynamically allocates the register
-	m_sceneReg = new entt::registry;
+	if (m_sceneReg == nullptr)
+	{
+		m_sceneReg = new entt::registry;
+	}
 
 	//Attach the register
 	ECS::AttachRegister(m_sceneReg);
@@ -81,6 +77,58 @@ void Scene::Update()
 	auto& tempSpr = m_sceneReg->get<Sprite>(m_helloWorldSign);
 	
 	tempSpr.SetTransparency((0.5 * sin(Timer::time * 3.f)) + 0.5f);
+}
+
+void Scene::GUI()
+{
+	//Does nothin
+
+}
+
+void Scene::AdjustScrollOffset()
+{
+	float maxSizeX = ECS::GetComponent<Camera>(MainEntities::MainCamera()).GetOrthoSize().y;
+	float maxSizeY = ECS::GetComponent<Camera>(MainEntities::MainCamera()).GetOrthoSize().w;
+
+	float playerHalfSize = ECS::GetComponent<Sprite>(MainEntities::MainPlayer()).GetWidth() / 2.f;
+
+	ECS::GetComponent<HorizontalScroll>(MainEntities::MainCamera()).SetOffset((maxSizeX * BackEnd::GetAspectRatio()) - playerHalfSize);
+	ECS::GetComponent<VerticalScroll>(MainEntities::MainCamera()).SetOffset(maxSizeY - playerHalfSize);
+}
+
+void Scene::CreateCameraEntity(bool mainCamera, float windowWidth, float windowHeight, float left, float right, float bottom, float top, 
+									float zNear, float zFar, float aspectRatio, bool vertScroll, bool horizScroll)
+{
+	//Setup main camera
+	{
+		//Creates Camera Entity
+		auto entity = ECS::CreateEntity();
+		ECS::SetIsMainCamera(entity, false);
+
+		ECS::AttachComponent<Camera>(entity);
+		if (horizScroll)
+		{
+			ECS::AttachComponent<HorizontalScroll>(entity);
+		}
+		if (vertScroll)
+		{
+			ECS::AttachComponent<VerticalScroll>(entity);
+		}
+
+		vec4 temp = vec4(left, right, bottom, top);
+		ECS::GetComponent<Camera>(entity).SetOrthoSize(temp);
+		ECS::GetComponent<Camera>(entity).SetWindowSize(vec2(float(windowWidth), float(windowHeight)));
+		ECS::GetComponent<Camera>(entity).Orthographic(aspectRatio, temp.x, temp.y, temp.z, temp.w, zNear, zFar);
+
+		if (horizScroll)
+		{
+			ECS::GetComponent<HorizontalScroll>(entity).SetCam(&ECS::GetComponent<Camera>(entity));
+		}
+		if (vertScroll)
+		{
+			ECS::GetComponent<VerticalScroll>(entity).SetCam(&ECS::GetComponent<Camera>(entity));
+		}
+	}
 }
 
 entt::registry* Scene::GetScene() const

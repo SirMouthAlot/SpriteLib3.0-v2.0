@@ -20,7 +20,7 @@ enum EffectType
 	Sepia,
 	Greyscale,
 	Vignette,
-	Grain,
+	//Grain,
 	Pixelate,
 	SelectiveColor,
 	Bloom,

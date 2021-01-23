@@ -35,10 +35,12 @@ void Game::InitGame()
 
 	//Creates a new scene.
 	//Replace this with your own scene.
-	m_scenes.push_back(new Scene("Default Scene"));
-
+	m_scenes.push_back(new FirstCreation("FIRST SCENE!!!!"));
+	m_scenes.push_back(new PhysicsPlayground("PHYSICS PLAYGROUND TIEM!!!"));
+	m_scenes.push_back(new AnimationSpritePlayground("Animation TIEM!!!!"));
+	 
 	//Sets active scene reference to our scene
-	m_activeScene = m_scenes[0];
+	m_activeScene = m_scenes[1];
 
 	m_activeScene->InitScene(float(BackEnd::GetWindowWidth()), float(BackEnd::GetWindowHeight()));
 
@@ -100,16 +102,12 @@ void Game::Update()
 
 void Game::GUI()
 {
+
 	UI::Start(BackEnd::GetWindowWidth(), BackEnd::GetWindowHeight());
 
-	ImGui::Text("Place your different tabs below.");
+	ImGui::DockSpaceOverViewport(0, ImGuiDockNodeFlags_PassthruCentralNode);
 
-	if (ImGui::BeginTabBar(""))
-	{
-		BackEnd::GUI(m_register);
-
-		ImGui::EndTabBar();
-	}
+	m_activeScene->GUI();
 
 	UI::End();
 }
@@ -205,33 +203,38 @@ void Game::KeyboardHold()
 {
 	//Active scene now captures this input and can use it
 	//Look at base Scene class for more info.
-	m_activeScene->KeyboardHold();
+	if (!ImGui::GetIO().WantCaptureKeyboard)
+	{
+		m_activeScene->KeyboardHold();
+	}
 }
 
 void Game::KeyboardDown()
 {
 	//Active scene now captures this input and can use it
 	//Look at base Scene class for more info.
-	m_activeScene->KeyboardDown();
+	if (!ImGui::GetIO().WantCaptureKeyboard)
+	{
+		m_activeScene->KeyboardDown();
+	}
 }
 
 void Game::KeyboardUp()
 {
 	//Active scene now captures this input and can use it
 	//Look at base Scene class for more info.
-	m_activeScene->KeyboardUp();
+	if (!ImGui::GetIO().WantCaptureKeyboard)
+	{
+		m_activeScene->KeyboardUp();
 
-	if (Input::GetKeyUp(Key::F1))
-	{
-		if (!UI::m_isInit)
+		if (Input::GetKeyUp(Key::F1))
 		{
-			UI::InitImGUI();
+			m_guiActive = !m_guiActive;
 		}
-		m_guiActive = !m_guiActive;
-	}
-	if (Input::GetKeyUp(Key::P))
-	{
-		PhysicsBody::SetDraw(!PhysicsBody::GetDraw());
+		if (Input::GetKeyUp(Key::P))
+		{
+			PhysicsBody::SetDraw(!PhysicsBody::GetDraw());
+		}
 	}
 }
 

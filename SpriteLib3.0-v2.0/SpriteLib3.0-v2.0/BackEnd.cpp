@@ -28,6 +28,36 @@ void BackEnd::InitBackEnd(float windowWidth, float windowHeight)
 	EffectManager::InitEffectManager(unsigned(m_windowWidth), unsigned(m_windowHeight));
 	//Initializes the rendering system
 	RenderingSystem::Init();
+
+	//Init UI on Start
+	if (!UI::m_isInit)
+	{
+		UI::InitImGUI(BackEnd::GetWindow()->m_window, BackEnd::GetWindow()->m_context);
+	}
+
+	ImGuiIO io = ImGui::GetIO();
+	io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;
+	io.KeyMap[ImGuiKey_LeftArrow] = SDLK_LEFT;
+	io.KeyMap[ImGuiKey_RightArrow] = SDLK_RIGHT;
+	io.KeyMap[ImGuiKey_UpArrow] = SDLK_UP;
+	io.KeyMap[ImGuiKey_DownArrow] = SDLK_DOWN;
+	io.KeyMap[ImGuiKey_PageUp] = SDLK_PAGEUP;
+	io.KeyMap[ImGuiKey_PageDown] = SDLK_PAGEDOWN;
+	io.KeyMap[ImGuiKey_Home] = SDLK_HOME;
+	io.KeyMap[ImGuiKey_End] = SDLK_END;
+	io.KeyMap[ImGuiKey_Insert] = SDLK_INSERT;
+	io.KeyMap[ImGuiKey_Delete] = SDLK_DELETE;
+	io.KeyMap[ImGuiKey_Backspace] = SDLK_BACKSPACE;
+	io.KeyMap[ImGuiKey_Space] = SDLK_SPACE;
+	io.KeyMap[ImGuiKey_Enter] = SDLK_RETURN;
+	io.KeyMap[ImGuiKey_Escape] = SDLK_ESCAPE;
+	io.KeyMap[ImGuiKey_KeyPadEnter] = SDLK_KP_ENTER;
+	io.KeyMap[ImGuiKey_A] = SDLK_a;
+	io.KeyMap[ImGuiKey_C] = SDLK_c;
+	io.KeyMap[ImGuiKey_V] = SDLK_v;
+	io.KeyMap[ImGuiKey_X] = SDLK_x;
+	io.KeyMap[ImGuiKey_Y] = SDLK_y;
+	io.KeyMap[ImGuiKey_Z] = SDLK_z;
 }
 
 void BackEnd::InitGLEW()
@@ -89,14 +119,26 @@ void BackEnd::InitSDL()
 	///End Attributes
 }
 
+//void BackEnd::FilterKeys(SDL_KeyboardEvent* keyEvnt)
+//{
+//	//Only sends if the keyevnt isn't a modifier key
+//	ImGuiIO& io = ImGui::GetIO();
+//	io.AddInputCharacter((unsigned short)keyEvnt->keysym.sym);
+//}
+
 void BackEnd::PollEvents(entt::registry* mainReg, bool * closeWindow,
 							bool * mouseMotion, bool * mouseClick,
 								bool * mouseWheel)
 {
+
+
 	//Polls events
 	SDL_Event event;
+	
+
 	while (SDL_PollEvent(&event))
 	{
+		ImGui_ImplSDL2_ProcessEvent(&event);
 		switch (event.type)
 		{
 			//If event is quit

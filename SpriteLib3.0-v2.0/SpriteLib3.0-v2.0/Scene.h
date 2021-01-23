@@ -17,14 +17,18 @@ public:
 	~Scene() { }
 
 	void Unload();
-	//Saves the scene
-	void SaveScene();
 
 	//Each scene will need to have a different
 	//init, as each scene's contents will be different
 	virtual void InitScene(float windowWidth, float windowHeight);
 
 	virtual void Update();
+
+	virtual void GUI();
+
+	void AdjustScrollOffset();
+	void CreateCameraEntity(bool mainCamera, float windowWidth, float windowHeight, float left, float right, float bottom, float top, 
+								float zNear, float zFar, float aspectRatio, bool vertScroll=false, bool horizScroll=false);
 
 	//Gamepad Input
 	//Because these are virtual you can override them in your inherited classes.
@@ -78,7 +82,7 @@ protected:
 	std::string m_name = "Default Name";
 private:
 	//Hello world entity number
-	int m_helloWorldSign;
+	int m_helloWorldSign = 0;
 };
 
 #endif // !__SCENE_H__

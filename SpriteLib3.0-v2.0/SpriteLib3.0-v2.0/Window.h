@@ -44,14 +44,14 @@ public:
 
 	//returns whether or not the window is still open
 	inline bool isOpen() const { return m_open; }
+
+	//SDL window value
+	SDL_Window* m_window = nullptr;
+	//SDL Window Context 
+	SDL_GLContext m_context = NULL;
 private:
 	//We don't need windows being copied
 	Window(const Window&);
-	
-	//SDL window value
-	SDL_Window *m_window = nullptr;
-	//SDL Window Context 
-	SDL_GLContext m_context = NULL;
 	//Is the window open?
 	bool m_open = false;
 	//Is the window fullscreen?

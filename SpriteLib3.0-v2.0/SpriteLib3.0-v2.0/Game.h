@@ -83,6 +83,7 @@ private:
 	bool m_click = false;
 	bool m_wheel = false;
 
+	//Xbox Input
 	XInputManager input;
 };
 
